@@ -8,6 +8,7 @@ import metaweather
 from datetime import datetime, timedelta
 from dayforecastobject import BlockBuilder, CityForecast
 from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -30,11 +31,17 @@ SCHEDULED_MESSAGES = [
 ]
 
 
+def daily_weather_report():
+    user_id = 'U01EUSL128P'
+    client.chat_postMessage(channel=user_id, text="DM with interval!")
+
+
 def send_tomorrow_forecast(channel):
     weather_response = metaweather.get_forecast().json()
     block_builder = BlockBuilder(CityForecast(weather_response), channel)
     message_forecast = block_builder.get_tomorrow_forecast()
     response = client.chat_postMessage(**message_forecast)
+    # https://stackoverflow.com/questions/36901/what-does-double-star-asterisk-and-star-asterisk-do-for-parameters
 
 
 def send_week_forecast(channel):
@@ -44,6 +51,7 @@ def send_week_forecast(channel):
     response = client.chat_postMessage(**message_forecast)
 
 
+# https://stackoverflow.com/questions/6392739/what-does-the-at-symbol-do-in-python
 @slack_event_adapter.on('message')
 def message(payLoad):
     print("Message PAYLOAD:")
@@ -86,6 +94,12 @@ def message_count():
 
     return Response(), 200
 
+
+cron = BackgroundScheduler(daemon=True)
+cron.add_job(func=daily_weather_report, trigger='cron', minute='*')  # staviti hour='20'- možda staviti kao parametar?
+cron.start()
+
+atexit.register(lambda: cron.shutdown(wait=False))
 
 if __name__ == "__main__":
     # ids = schedule_messages(SCHEDULED_MESSAGES)

@@ -1,38 +1,7 @@
 import metaweather
-from datetime import date
+from datetime import date, datetime, timedelta
 from dayforecastobject import CityForecast, BlockBuilder
-
-slack_blok = {
-    "blocks": [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "Vrijeme sutra:\t*Zagreb\t8°C*\nVedro od 3 do 10°C\nVlažnost: *91%*\nTlak zraka: *1007*"
-            },
-            "accessory": {
-                "type": "image",
-                "image_url": "https://www.metaweather.com/static/img/weather/png/c.png",
-                "alt_text": "computer thumbnail"
-            }
-        },
-        {
-            "type": "divider"
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "Vrijeme sutra:\t*Zagreb\t8°C*\nVedro od 3 do 10°C\nVlažnost: *91%*\nTlak zraka: *1007*"
-            },
-            "accessory": {
-                "type": "image",
-                "image_url": "https://www.metaweather.com/static/img/weather/png/c.png",
-                "alt_text": "computer thumbnail"
-            }
-        }
-    ]
-}
+from apscheduler.schedulers.background import BackgroundScheduler
 
 api_ = {
     "consolidated_weather": [
@@ -200,26 +169,19 @@ api_ = {
     "timezone": "Europe/Vienna"
 }
 
-url_pref = 'https://www.metaweather.com/static/img/weather/png/'
-url_post = '.png'
-
 # response = metaweather.get_tomorrow_forecast().json()
 
-"""print(metaweather.get_api_icon('hc'))
-print(datetime.date.today() + datetime.timedelta(days=1))
-print(response.get('consolidated_weather'))
-print(response.get('consolidated_weather')[0].get('applicable_date'))
-"""
-
+print(date.today() + timedelta(days=1))
 api_obj = CityForecast(api_)
-
 datum = "2020-12-10"
 dt = date.fromisoformat(datum).weekday()
 print(dt)
 print(type(dt))
 
+
+
 # print(api_obj.get_weather())
-bb_obj = BlockBuilder(api_obj, 'asd')
-block_day = bb_obj.get_tomorrow_forecast()
-block_week = bb_obj.get_week_forecast()
-print('end')
+# bb_obj = BlockBuilder(api_obj, 'asd')
+# block_day = bb_obj.get_tomorrow_forecast()
+# block_week = bb_obj.get_week_forecast()
+# print('end')
