@@ -26,7 +26,8 @@ class DayForecast:
             'max_temp': str(int(self.__max_temp)),
             'humidity': str(self.__humidity),
             'air_pres': str(self.__air_pressure),
-            'day_of_w': self.get_day_of_week()
+            'day_of_w': self.get_day_of_week(),
+            'wind_speed': str(int(self.__wind_speed * 1.61))  # mph to km/h
         }
 
 
@@ -62,6 +63,58 @@ class BlockBuilder:
         self.__forecast = forecast
         self.__channel = channel
 
+    def tomorrow_report(self):
+        start_text = {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": self.__forecast.get_title(),
+                "emoji": True
+            }
+        }
+        divider = {'type': 'divider'}
+
+        weather_data = self.__forecast.get_weather_tomorrow()
+        the_temp = int(weather_data.get('the_temp'))
+        wind_spd = int(weather_data.get('wind_speed'))
+        wea_abbr = weather_data.get('wea_abbr')
+        weather_icon = 'https://www.metaweather.com/static/img/weather/png/' + wea_abbr + '.png'
+
+        precipitation = ""
+        if wea_abbr in ['sn', 'sl', 'h', 'hr', 'lr', 's']:
+            precipitation = "Očekuju se oborine, nemoj zaboraviti *kišobran*. "
+
+        wind = ""
+        if wind_spd >= 11:
+            wind = "Puhat će "
+            if 11 <= wind_spd <= 15:
+                wind = wind + "lagani"
+            elif 16 <= wind_spd <= 19:
+                wind = wind + "osjetni"
+            elif 20 <= wind_spd:
+                wind = wind + "jak"
+
+            wind = wind + " vjetar. "
+
+        temp = ""
+        if the_temp < 0:
+            temp = "Sutra će temperatura biti u minusu jako se toplo obuci. "
+        elif 0 <= the_temp <= 10:
+            temp = "Sutra će biti hladno, pa se zato toplo se obuci. "
+        elif 11 <= the_temp <= 20:
+            temp = "Sutra se očekuju udobne tempreature, sukladno tome se odjeni. "
+        elif 21 <= the_temp <= 25:
+            temp = "Sutra se očekuje da će biti toplo, lagano se odjeni. "
+        else:
+            temp = "Sutra će biti vruče, razmisli o kratkim hlačama. "
+
+        final_str = temp + precipitation + wind
+
+        return {
+            "channel": self.__channel,
+            "text": final_str
+        }
+
     def get_week_forecast(self):
         start_text = {
             "type": "header",
@@ -83,19 +136,18 @@ class BlockBuilder:
             air_pres = weather_data.get('air_pres')
             weather_icon = 'https://www.metaweather.com/static/img/weather/png/' + wea_abbr + '.png'
             text = day + "\n" + the_temp + "°C, " + wea_name + "\nVlažnost: *" + humidity + "%*\nTlak zraka: *" + air_pres + "*"
-            print(type(day), type(the_temp), type(wea_name), type(wea_abbr), type(humidity), type(air_pres))
             tmp_section = {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": text
-                    },
-                    "accessory": {
-                        "type": "image",
-                        "image_url": weather_icon,
-                        "alt_text": "computer thumbnail"
-                    }
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": text
+                },
+                "accessory": {
+                    "type": "image",
+                    "image_url": weather_icon,
+                    "alt_text": "computer thumbnail"
                 }
+            }
             blocks.append(tmp_section)
             blocks.append(divider)
 
@@ -117,7 +169,6 @@ class BlockBuilder:
         wea_name = weather_data.get('wea_name')
         weather_icon = 'https://www.metaweather.com/static/img/weather/png/' + wea_abbr + '.png'
         text = 'Vrijeme sutra:\t*' + title + '\t' + the_temp + '°C*\n' + wea_name + ', od ' + min_temp + ' do ' + max_temp + '°C\nVlažnost: ' + humidity + '%\nTlak zraka: ' + air_pres
-        print(weather_data.get('day_of_w'))
         return {
             "channel": self.__channel,
             "blocks": [

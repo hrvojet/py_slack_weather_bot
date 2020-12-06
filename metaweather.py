@@ -1,4 +1,5 @@
 import requests
+import re
 
 day_of_week = {
     0: 'Ponedjeljak',
@@ -15,8 +16,8 @@ weather_state_abr = {
     'sl': 'Susnježica',
     'h': 'Tuča',
     't': 'Grmljavina',
-    'hr': 'Pljusak',
-    'lr': 'Slaba kiša',
+    'hr': 'Kiša',
+    'lr': 'Lagana kiša',
     's': 'Kratki pljuskovi',
     'lc': 'Blaga naoblaka',
     'hc': 'Oblačno',
@@ -28,15 +29,14 @@ api_woeid_url = 'https://www.metaweather.com/api/location/'
 api_zagreb_url = 'https://www.metaweather.com/api/location/851128'
 
 
-def get_api_icon(icon_abr):
-    return 'https://www.metaweather.com/static/img/weather/png/' + icon_abr + '.png'
-
-
 def get_forecast():
-    jsonurl = requests.get(api_zagreb_url)  # todo returna string (slack block)
+    jsonurl = requests.get(api_zagreb_url)
     return jsonurl
 
 
-def get_today_forecast():  # todo returna posloženi blok za
-    return 1
-
+def not_valid_text(text):
+    digits = re.findall(r'\d+', text)
+    digits = list(map(int, digits))
+    if len(digits) != 1 or not(0 <= digits[0] <= 23):
+        return True
+    return False

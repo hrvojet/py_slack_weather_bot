@@ -1,14 +1,13 @@
 import slack
-from slackeventsapi import SlackEventAdapter
 import os
+import metaweather
+import atexit
+from slackeventsapi import SlackEventAdapter
 from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, request, Response
-import metaweather
-from datetime import datetime, timedelta
 from dayforecastobject import BlockBuilder, CityForecast
 from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -18,22 +17,17 @@ app = Flask(__name__)
 slack_event_adapter = SlackEventAdapter(os.environ['SIGNING_SECRET'], '/slack/events', app)
 client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
 
-client.chat_postMessage(channel=os.environ['CHANNEL_NAME'], text="Živ sam!")
+
 BOT_ID = client.api_call("auth.test")['user_id']
-
-welcome_messages = {}
-
-SCHEDULED_MESSAGES = [
-    {'text': 'First message', 'post_at': (datetime.now() + timedelta(seconds=20)).timestamp(),
-     'channel': 'C01F6GNPL3F'},
-    {'text': 'Second Message!', 'post_at': (datetime.now() + timedelta(seconds=30)).timestamp(),
-     'channel': 'C01F6GNPL3F'}
-]
 
 
 def daily_weather_report():
-    user_id = 'U01EUSL128P'
-    client.chat_postMessage(channel=user_id, text="DM with interval!")
+    channel = 'U01EUSL128P'
+    client.chat_postMessage(channel=channel, text="Živ sam!")
+    # weather_response = metaweather.get_forecast().json()
+    # block_builder = BlockBuilder(CityForecast(weather_response), channel)
+    # message_forecast = block_builder.tomorrow_report()
+    # response = client.chat_postMessage(**message_forecast)
 
 
 def send_tomorrow_forecast(channel):
@@ -77,9 +71,21 @@ def message(payLoad):
                                     text='Izgleda da upisuješ krivu naredbu, probaj *!help*')
 
 
-# slash command for city forecast change
-@app.route('/grad', methods=['POST'])
-def message_count():
+cron = BackgroundScheduler(daemon=True)
+cron.add_job(func=daily_weather_report, trigger='cron', hour='*', minute='*')  # demo
+# cron.add_job(func=daily_weather_report, trigger='cron', hour='20', minute='0')
+cron.start()
+cron.print_jobs()
+print("scheduler jobs:")
+print(cron.get_jobs())
+job_id = cron.get_jobs()[0].__getattribute__('id')
+print(job_id)
+print(type(cron.get_jobs()[0].__getattribute__('id')))
+
+
+# slash command for changing time (hour) for tomorrow report
+@app.route('/sat', methods=['POST'])
+def hour_change():
     data = request.form  # 3- 5.55
     user_id = data.get('user_id')
     channel_id = data.get('channel_id')
@@ -87,20 +93,21 @@ def message_count():
     print(text)
 
     if text == '':
-        client.chat_postMessage(channel=channel_id, text='Nedostaje argument #ime-grada')
+        client.chat_postMessage(channel=channel_id, text='Nedostaje argument [hh]')
+    elif metaweather.not_valid_text(text):
+        client.chat_postMessage(channel=channel_id, text='Pazi kod unosa, argument mora biti znamenka od *0* do *23*')
     else:
-        # promjeni grad
-        client.chat_postMessage(channel=channel_id, text='Grad promjenjen u ' + text)
+        client.chat_postMessage(channel=channel_id,
+                                text='*Slanje obavijesti o prognozi biti će svaki dan u ' + text + ' sati*')
+        cron.reschedule_job(job_id, trigger='cron', hour=text, minute='0')
+        print(cron.get_jobs())
+        cron.print_jobs()
 
     return Response(), 200
 
-
-cron = BackgroundScheduler(daemon=True)
-cron.add_job(func=daily_weather_report, trigger='cron', minute='*')  # staviti hour='20'- možda staviti kao parametar?
-cron.start()
 
 atexit.register(lambda: cron.shutdown(wait=False))
 
 if __name__ == "__main__":
     # ids = schedule_messages(SCHEDULED_MESSAGES)
-    app.run(debug=True)
+    app.run()
