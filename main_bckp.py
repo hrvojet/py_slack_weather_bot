@@ -31,7 +31,7 @@ SCHEDULED_MESSAGES = [
 
 
 # task
-class WelcomeMessage:  # todo iskoristi template ove klase za buildanje
+class WelcomeMessage:
     START_TEXT = {
         'type': 'section',
         'text': {

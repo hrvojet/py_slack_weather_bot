@@ -82,7 +82,7 @@ class BlockBuilder:
 
         precipitation = ""
         if wea_abbr in ['sn', 'sl', 'h', 'hr', 'lr', 's']:
-            precipitation = "Očekuju se oborine, nemoj zaboraviti *kišobran*. "
+            precipitation = "Očekuju se oborine, nemoj zaboraviti *kišobran* :umbrella_with_rain_drops: "
 
         wind = ""
         if wind_spd >= 11:
@@ -98,15 +98,15 @@ class BlockBuilder:
 
         temp = ""
         if the_temp < 0:
-            temp = "Sutra će temperatura biti u minusu jako se toplo obuci. "
+            temp = "Sutra će temperatura biti u minusu jako se toplo obuci :snowflake: "
         elif 0 <= the_temp <= 10:
-            temp = "Sutra će biti hladno, pa se zato toplo se obuci. "
+            temp = "Sutra će biti hladno, pa se zato toplo se obuci :scarf::coat: "
         elif 11 <= the_temp <= 20:
-            temp = "Sutra se očekuju udobne tempreature, sukladno tome se odjeni. "
+            temp = "Sutra se očekuju udobne tempreature, sukladno tome se odjeni :mostly_sunny: "
         elif 21 <= the_temp <= 25:
-            temp = "Sutra se očekuje da će biti toplo, lagano se odjeni. "
+            temp = "Sutra se očekuje da će biti toplo, lagano se odjeni :sunny: "
         else:
-            temp = "Sutra će biti vruče, razmisli o kratkim hlačama. "
+            temp = "Sutra će biti vruče, razmisli o kratkim hlačama :thermometer: "
 
         final_str = temp + precipitation + wind
 

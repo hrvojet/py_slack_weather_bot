@@ -17,17 +17,16 @@ app = Flask(__name__)
 slack_event_adapter = SlackEventAdapter(os.environ['SIGNING_SECRET'], '/slack/events', app)
 client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
 
-
 BOT_ID = client.api_call("auth.test")['user_id']
 
 
 def daily_weather_report():
     channel = 'U01EUSL128P'
-    client.chat_postMessage(channel=channel, text="Živ sam!")
-    # weather_response = metaweather.get_forecast().json()
-    # block_builder = BlockBuilder(CityForecast(weather_response), channel)
-    # message_forecast = block_builder.tomorrow_report()
-    # response = client.chat_postMessage(**message_forecast)
+    # client.chat_postMessage(channel=channel, text=":sunny:")
+    weather_response = metaweather.get_forecast().json()
+    block_builder = BlockBuilder(CityForecast(weather_response), channel)
+    message_forecast = block_builder.tomorrow_report()
+    response = client.chat_postMessage(**message_forecast)
 
 
 def send_tomorrow_forecast(channel):
