@@ -168,9 +168,6 @@ api_ = {
 
 # response = metaweather.get_tomorrow_forecast().json()
 
-print(metaweather.not_valid_text('22'))
-
-print(4.08 * 1.61)
 # print(api_obj.get_weather())
 # bb_obj = BlockBuilder(api_obj, 'asd')
 # block_day = bb_obj.get_tomorrow_forecast()

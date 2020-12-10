@@ -1,6 +1,10 @@
 import requests
 import re
 
+city_woeid = '851128'  # Zagreb woeid
+api_woeid_url = 'https://www.metaweather.com/api/location/'
+api_zagreb_url = 'https://www.metaweather.com/api/location/851128'
+
 day_of_week = {
     0: 'Ponedjeljak',
     1: 'Utorak',
@@ -24,10 +28,6 @@ weather_state_abr = {
     'c': 'Vedro'
 }
 
-city_woeid = '851128'  # Zagreb woeid
-api_woeid_url = 'https://www.metaweather.com/api/location/'
-api_zagreb_url = 'https://www.metaweather.com/api/location/851128'
-
 
 def get_forecast():
     jsonurl = requests.get(api_zagreb_url)
@@ -37,6 +37,6 @@ def get_forecast():
 def not_valid_text(text):
     digits = re.findall(r'\d+', text)
     digits = list(map(int, digits))
-    if len(digits) != 1 or not(0 <= digits[0] <= 23):
+    if len(digits) != 1 or not (0 <= digits[0] <= 23):
         return True
     return False
